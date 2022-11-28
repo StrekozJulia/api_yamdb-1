@@ -21,6 +21,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'api.apps.ApiConfig',
+    'reviews.apps.ReviewsConfig',
 ]
 
 MIDDLEWARE = [
@@ -82,6 +84,8 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# User
+AUTH_USER_MODEL = 'reviews.User'
 
 # Internationalization
 
