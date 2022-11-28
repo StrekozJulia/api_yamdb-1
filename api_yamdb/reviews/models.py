@@ -26,3 +26,53 @@ class User(AbstractUser):
     role = models.CharField('Роль',
                             max_length=max(len(role) for role, _ in ROLES),
                             choices=ROLES, default=USER)
+
+
+class Category(models.Model):
+    """Модель категории произведения"""
+
+    name = models.CharField('Название', max_length=256,
+                            unique=True, blank=False, null=False)
+    slug = models.SlugField('Слаг', max_length=50,
+                            unique=True, blank=False, null=False)
+
+    def __str__(self):
+        return self.name
+
+
+class Genre(models.Model):
+    """Модель жанра произведения"""
+
+    name = models.CharField('Название', max_length=256,
+                            unique=True, blank=False, null=False)
+    slug = models.SlugField('Слаг', max_length=50,
+                            unique=True, blank=False, null=False)
+
+    def __str__(self):
+        return self.name
+
+
+class Title(models.Model):
+    """Модель произведения"""
+
+    name = models.CharField('Название', max_length=256,
+                            blank=False, null=False)
+    year = models.IntegerField('Год выпуска', blank=False, null=False)
+    description = models.TextField('Описание', blank=True)
+    genre = models.ForeignKey(
+        Genre,
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name='titles',
+    )
+    category = models.ForeignKey(
+        Category,
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name='titles',
+    )
+
+    def __str__(self):
+        return self.name
