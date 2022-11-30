@@ -1,4 +1,3 @@
-from django.contrib.auth.validators import UnicodeUsernameValidator
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from reviews.models import User
@@ -7,7 +6,6 @@ from .validators import UsernameValidator
 
 
 class SingUpSerializer(serializers.Serializer):
-    """Сериализатор для регистрации."""
 
     email = serializers.EmailField(
         required=True
@@ -24,3 +22,9 @@ class SingUpSerializer(serializers.Serializer):
                 "Имя пользователя не может быть 'me'"
             )
         return value
+
+
+class ReceiveTokenSerializer(serializers.Serializer):
+
+    username = serializers.CharField()
+    confirmation_code = serializers.CharField()
