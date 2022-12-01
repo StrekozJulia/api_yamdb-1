@@ -11,10 +11,3 @@ class AdminOrReadOnly(permissions.BasePermission):
             if current_user.role == 'admin':
                 return True
         return request.method in permissions.SAFE_METHODS
-
-    def has_object_permission(self, request, view, obj):
-        if request.user.is_authenticated:
-            current_user = User.objects.get(username=request.user.username)
-            if current_user.role == 'admin':
-                return True
-        return request.method in permissions.SAFE_METHODS

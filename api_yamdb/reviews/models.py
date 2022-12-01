@@ -1,6 +1,9 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
+SLUG_LEN = 50
+NAME_LEN = 256
+
 
 class User(AbstractUser):
     """Кастомная модель для юзера"""
@@ -28,36 +31,47 @@ class User(AbstractUser):
                             choices=ROLES, default=USER)
 
 
-class Category(models.Model):
+class Characteristic(models.Model):
+    """Абстрактная модель характеристики произведения"""
+
+    class Meta:
+        abstract = True
+        verbose_name = 'Характеристика'
+        verbose_name_plural = 'Характеристики'
+
+    name = models.CharField('Название', max_length=NAME_LEN,
+                            unique=True, blank=False, null=False,
+                            db_index=True)
+    slug = models.SlugField('Слаг', max_length=SLUG_LEN,
+                            unique=True, blank=False, null=False)
+
+    def __str__(self):
+        return self.name
+
+
+class Category(Characteristic):
     """Модель категории произведения"""
 
-    name = models.CharField('Название', max_length=256,
-                            unique=True, blank=False, null=False)
-    slug = models.SlugField('Слаг', max_length=50,
-                            unique=True, blank=False, null=False)
-
-    def __str__(self):
-        return self.name
+    class Meta:
+        verbose_name = 'Категория'
+        verbose_name_plural = 'Категории'
 
 
-class Genre(models.Model):
+class Genre(Characteristic):
     """Модель жанра произведения"""
 
-    name = models.CharField('Название', max_length=256,
-                            unique=True, blank=False, null=False)
-    slug = models.SlugField('Слаг', max_length=50,
-                            unique=True, blank=False, null=False)
-
-    def __str__(self):
-        return self.name
+    class Meta:
+        verbose_name = 'Жанр'
+        verbose_name_plural = 'Жанры'
 
 
 class Title(models.Model):
     """Модель произведения"""
 
     name = models.CharField('Название', max_length=256,
-                            blank=False, null=False)
-    year = models.IntegerField('Год выпуска', blank=False, null=False)
+                            blank=False, null=False, db_index=True)
+    year = models.IntegerField('Год выпуска', blank=False,
+                               null=False, db_index=True)
     description = models.TextField('Описание', blank=True)
     genre = models.ForeignKey(
         Genre,
