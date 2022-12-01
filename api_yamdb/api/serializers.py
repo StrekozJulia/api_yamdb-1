@@ -2,6 +2,32 @@ import datetime
 from rest_framework import serializers
 from reviews.models import Title, Category, Genre
 
+from .validators import UsernameValidator
+
+
+class SingUpSerializer(serializers.Serializer):
+
+    email = serializers.EmailField(
+        required=True
+    )
+    username = serializers.CharField(
+        required=True,
+        validators=[UsernameValidator(), ]
+    )
+
+    def validate_username(self, value):
+        if value == 'me':
+            raise serializers.ValidationError(
+                "Имя пользователя не может быть 'me'"
+            )
+        return value
+
+
+class ReceiveTokenSerializer(serializers.Serializer):
+
+    username = serializers.CharField()
+    confirmation_code = serializers.CharField()
+
 
 class TitleSerializer(serializers.ModelSerializer):
     category = serializers.SlugRelatedField(
@@ -32,6 +58,7 @@ class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         fields = '__all__'
         model = Category
+        lookup_field = 'slug'
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -39,3 +66,4 @@ class GenreSerializer(serializers.ModelSerializer):
     class Meta:
         fields = '__all__'
         model = Genre
+        lookup_field = 'slug'
