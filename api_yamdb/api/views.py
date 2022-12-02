@@ -59,17 +59,21 @@ class ReceiveToken(views.APIView):
 
 
 class TitleViewSet(viewsets.ModelViewSet):
+    """Просмотр, создание, редактирование и удаление произведений"""
+
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
     permission_classes = (AdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('name', 'year', 'genre', 'category')
+    filterset_fields = ('name', 'year', 'genre__slug', 'category__slug')
 
 
 class CategoryViewSet(mixins.ListModelMixin,
                       mixins.CreateModelMixin,
                       mixins.DestroyModelMixin,
                       viewsets.GenericViewSet):
+    """Просмотр, создание и удаление категорий произведений"""
+
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = (AdminOrReadOnly,)
@@ -82,6 +86,8 @@ class GenreViewSet(mixins.ListModelMixin,
                    mixins.CreateModelMixin,
                    mixins.DestroyModelMixin,
                    viewsets.GenericViewSet):
+    """Просмотр, создание и удаление категорий произведений"""
+
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     permission_classes = (AdminOrReadOnly,)
