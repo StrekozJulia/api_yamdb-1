@@ -27,3 +27,13 @@ class IsAuthorIsAdminIsModeratorOrReadOnly(permissions.BasePermission):
                 or request.user.role == 'admin'
                 or request.user.role == 'moderator'
                 or request.user.is_superuser)
+
+
+class IsAdmin(permissions.BasePermission):
+
+    message = 'Доступно только администратору.'
+
+    def has_permission(self, request, view):
+        return (request.user.is_authenticated
+                and (request.user.role == 'admin' or request.user.is_superuser)
+                )

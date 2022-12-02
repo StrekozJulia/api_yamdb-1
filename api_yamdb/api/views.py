@@ -1,19 +1,20 @@
 from django.conf import settings
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
-from rest_framework import status, views, viewsets, mixins, filters
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import (filters, mixins, permissions, status, views,
+                            viewsets)
+from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
-from django_filters.rest_framework import DjangoFilterBackend
-from reviews.models import Title, Category, Genre, User
+from reviews.models import Category, Genre, Title, User
 
-from .serializers import (TitleSerializer,
-                          CategorySerializer,
-                          GenreSerializer,
-                          ReceiveTokenSerializer,
-                          SingUpSerializer)
-from .permissions import AdminOrReadOnly
+from .permissions import AdminOrReadOnly, IsAdmin
+from .serializers import (CategorySerializer, GenreSerializer,
+                          ReceiveTokenSerializer, SingUpSerializer,
+                          TitleSerializer, UserProfileSerializer,
+                          UsersSerializer)
 
 
 class SignUp(views.APIView):
@@ -95,3 +96,28 @@ class GenreViewSet(mixins.ListModelMixin,
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
     lookup_field = 'slug'
+
+
+class UsersViewSet(viewsets.ModelViewSet):
+
+    queryset = User.objects.all()
+    serializer_class = UsersSerializer
+    permission_classes = [IsAdmin]
+    lookup_field = ('username')
+
+    @action(
+        methods=['get', 'patch'], url_path='me', detail=False,
+        permission_classes=[permissions.IsAuthenticated])
+    def user_profile(self, request):
+        user = User.objects.get(username=request.user)
+        if request.method == 'PATCH':
+            serializer = UserProfileSerializer(user, data=request.data,
+                                               partial=True)
+            if not serializer.is_valid():
+                return Response(serializer.errors,
+                                status=status.HTTP_400_BAD_REQUEST)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        serializer = UserProfileSerializer(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
