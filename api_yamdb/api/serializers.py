@@ -1,6 +1,9 @@
+
 import datetime
 from rest_framework import serializers
-from reviews.models import Title, Category, Genre
+from rest_framework.validators import UniqueValidator
+from reviews.models import User, Title, Category, Genre
+
 
 from .validators import UsernameValidator
 
@@ -9,6 +12,7 @@ class SingUpSerializer(serializers.Serializer):
 
     email = serializers.EmailField(
         required=True
+        # validators=[UniqueValidator(queryset=User.objects.all())]
     )
     username = serializers.CharField(
         required=True,

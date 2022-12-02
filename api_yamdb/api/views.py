@@ -6,7 +6,8 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
 from django_filters.rest_framework import DjangoFilterBackend
-from reviews.models import Title, Category, Genre, User
+from reviews.models import Title, Category, Genre, User 
+
 from .serializers import (TitleSerializer,
                           CategorySerializer,
                           GenreSerializer,
