@@ -1,9 +1,9 @@
 
 import datetime
+
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
-from reviews.models import User, Title, Category, Genre
-
+from reviews.models import Category, Genre, Title
 
 from .validators import UsernameValidator
 
