@@ -1,13 +1,19 @@
 from django.conf import settings
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
-from rest_framework import status, views
+from rest_framework import status, views, viewsets, mixins, filters
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
-from reviews.models import User
+from django_filters.rest_framework import DjangoFilterBackend
+from reviews.models import Title, Category, Genre, User 
 
-from .serializers import ReceiveTokenSerializer, SingUpSerializer
+from .serializers import (TitleSerializer,
+                          CategorySerializer,
+                          GenreSerializer,
+                          ReceiveTokenSerializer,
+                          SingUpSerializer)
+from .permissions import AdminOrReadOnly
 
 
 class SignUp(views.APIView):
@@ -51,3 +57,35 @@ class ReceiveToken(views.APIView):
             'confirmation_code': 'Вы ввели неверный confirmation_code'
         },
             status=status.HTTP_400_BAD_REQUEST)
+
+
+class TitleViewSet(viewsets.ModelViewSet):
+    queryset = Title.objects.all()
+    serializer_class = TitleSerializer
+    permission_classes = (AdminOrReadOnly,)
+    filter_backends = (DjangoFilterBackend,)
+    filterset_fields = ('name', 'year', 'genre', 'category')
+
+
+class CategoryViewSet(mixins.ListModelMixin,
+                      mixins.CreateModelMixin,
+                      mixins.DestroyModelMixin,
+                      viewsets.GenericViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    permission_classes = (AdminOrReadOnly,)
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
+    lookup_field = 'slug'
+
+
+class GenreViewSet(mixins.ListModelMixin,
+                   mixins.CreateModelMixin,
+                   mixins.DestroyModelMixin,
+                   viewsets.GenericViewSet):
+    queryset = Genre.objects.all()
+    serializer_class = GenreSerializer
+    permission_classes = (AdminOrReadOnly,)
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
+    lookup_field = 'slug'

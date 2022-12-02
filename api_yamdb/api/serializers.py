@@ -1,6 +1,9 @@
+
+import datetime
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
-from reviews.models import User
+from reviews.models import User, Title, Category, Genre
+
 
 from .validators import UsernameValidator
 
@@ -28,3 +31,43 @@ class ReceiveTokenSerializer(serializers.Serializer):
 
     username = serializers.CharField()
     confirmation_code = serializers.CharField()
+
+
+class TitleSerializer(serializers.ModelSerializer):
+    category = serializers.SlugRelatedField(
+        slug_field='slug',
+        queryset=Category.objects.all()
+    )
+
+    genre = serializers.SlugRelatedField(
+        slug_field='slug',
+        queryset=Genre.objects.all()
+    )
+
+    class Meta:
+        fields = '__all__'
+        model = Title
+
+    def validate_year(self, value):
+        """Проверка корректности года выпуска."""
+        if value > datetime.datetime.now().year:
+            raise serializers.ValidationError(
+                'Год выпуска произведения позже текущего!'
+            )
+        return value
+
+
+class CategorySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        fields = '__all__'
+        model = Category
+        lookup_field = 'slug'
+
+
+class GenreSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        fields = '__all__'
+        model = Genre
+        lookup_field = 'slug'
