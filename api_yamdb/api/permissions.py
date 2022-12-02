@@ -8,6 +8,6 @@ class AdminOrReadOnly(permissions.BasePermission):
     def has_permission(self, request, view):
         if request.user.is_authenticated:
             current_user = User.objects.get(username=request.user.username)
-            if current_user.role == 'admin':
+            if current_user.role == 'admin' or request.user.is_superuser:
                 return True
         return request.method in permissions.SAFE_METHODS

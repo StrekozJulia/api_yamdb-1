@@ -138,3 +138,8 @@ EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
 EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'sent_emails')
 
 EMAIL_HOST_USER = 'api.yamdb.46@mail.ru'
+
+
+# Не факт что это нужно, буду тестить.
+
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
