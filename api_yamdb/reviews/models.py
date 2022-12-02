@@ -96,18 +96,12 @@ class Genre(Characteristic):
 class Title(models.Model):
     """Модель произведения"""
 
-    name = models.CharField('Название', max_length=256,
+    name = models.CharField('Название', max_length=NAME_LEN,
                             blank=False, null=False, db_index=True)
     year = models.IntegerField('Год выпуска', blank=False,
                                null=False, db_index=True)
     description = models.TextField('Описание', blank=True)
-    genre = models.ForeignKey(
-        Genre,
-        blank=True,
-        null=True,
-        on_delete=models.SET_NULL,
-        related_name='titles',
-    )
+    genre = models.ManyToManyField(Genre, through='GenreTitle')
     category = models.ForeignKey(
         Category,
         blank=True,
@@ -118,3 +112,18 @@ class Title(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class GenreTitle(models.Model):
+    """Модель связи произведений с их жанрами"""
+
+    genre = models.ForeignKey(Genre, on_delete=models.CASCADE)
+    title = models.ForeignKey(Title, on_delete=models.CASCADE)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(
+            fields=['genre', 'title'], name='unique_genre_title'
+        )]
+
+    def __str__(self):
+        return f'{self.genre} {self.title}'
