@@ -1,16 +1,14 @@
 from rest_framework import permissions
-from reviews.models import User
 
 
 class AdminOrReadOnly(permissions.BasePermission):
     """Проверка: является ли пользователь администратором."""
+    message = 'Данное действие доступно только администратору.'
 
     def has_permission(self, request, view):
-        if request.user.is_authenticated:
-            current_user = User.objects.get(username=request.user.username)
-            if current_user.role == 'admin' or request.user.is_superuser:
-                return True
-        return request.method in permissions.SAFE_METHODS
+
+        return (request.method in permissions.SAFE_METHODS
+                or (request.user.role == 'admin' or request.user.is_superuser))
 
 
 class IsAuthorIsAdminIsModeratorOrReadOnly(permissions.BasePermission):
