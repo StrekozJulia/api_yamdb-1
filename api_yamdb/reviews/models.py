@@ -1,6 +1,7 @@
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 SLUG_LEN = 50
 NAME_LEN = 256
@@ -100,3 +101,52 @@ class GenreTitle(models.Model):
 
     def __str__(self):
         return f'{self.genre} {self.title}'
+
+
+class Review(models.Model):
+    """Модель Review, привязанная к определённому произведению."""
+
+    title = models.ForeignKey(
+        Title,
+        on_delete=models.CASCADE,
+        related_name='reviews',
+        verbose_name='Произведение',
+    )
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='reviews',
+        verbose_name='Автор отзыва',
+    )
+    text = models.TextField(
+        verbose_name='Текст отзыва',
+        help_text='Добавьте Ваш отзыв'
+    )
+    score = models.IntegerField(
+        validators=(
+            MinValueValidator(1),
+            MaxValueValidator(100),
+        ),
+        error_messages=(
+            {'validators': 'Поставьте оценку от 1 до 100.'}
+        ),
+        verbose_name='Оценка произведения',
+        help_text='Поставьте оценку'
+    )
+    pub_date = models.DateTimeField(
+        verbose_name='Дата публикации',
+        auto_now_add=True,
+        db_index=True,
+    )
+
+    def __str__(self):
+        return self.text
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=('title', 'author',),
+                name='unique_review',
+            )
+        ]
+        ordering = ['-pub_date']

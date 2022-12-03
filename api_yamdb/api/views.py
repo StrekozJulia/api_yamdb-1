@@ -8,13 +8,14 @@ from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
-from reviews.models import Category, Genre, Title, User
+from reviews.models import Category, Genre, Title, User, Review
 
-from .permissions import AdminOrReadOnly, IsAdmin
+from .permissions import (AdminOrReadOnly, IsAdmin,
+                          IsAuthorIsAdminIsModeratorOrReadOnly)
 from .serializers import (CategorySerializer, GenreSerializer,
                           ReceiveTokenSerializer, SingUpSerializer,
                           TitleSerializer, UserProfileSerializer,
-                          UsersSerializer)
+                          UsersSerializer, ReviewSerializer)
 
 
 class SignUp(views.APIView):
@@ -121,3 +122,22 @@ class UsersViewSet(viewsets.ModelViewSet):
 
         serializer = UserProfileSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class ReviewViewSet(viewsets.ModelViewSet):
+    serializer_class = ReviewSerializer
+    permission_classes = (IsAuthorIsAdminIsModeratorOrReadOnly,)
+
+    def get_queryset(self):
+        title = get_object_or_404(
+            Title,
+            pk=self.kwargs.get('title_id')
+        )
+        return title.reviews.all()
+
+    def perform_create(self, serializer):
+        title = get_object_or_404(
+            Title,
+            pk=self.kwargs.get('title_id')
+        )
+        serializer.save(author=self.request.user, title=title)
