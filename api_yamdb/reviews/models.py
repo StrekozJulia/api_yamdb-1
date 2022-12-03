@@ -6,6 +6,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 SLUG_LEN = 50
 NAME_LEN = 256
 USER_LEN = 150
+COM_LEN = 15
 
 
 class User(AbstractUser):
@@ -150,3 +151,34 @@ class Review(models.Model):
             )
         ]
         ordering = ['-pub_date']
+
+
+class Comment(models.Model):
+    review = models.ForeignKey(
+        Review,
+        on_delete=models.CASCADE,
+        related_name='comments',
+        verbose_name='Отзыв',
+    )
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='comments',
+        verbose_name='Автор комментария',
+    )
+    text = models.TextField(
+        verbose_name='Текст комментария',
+        help_text='Добавьте Ваш комментарий'
+    )
+    pub_date = models.DateTimeField(
+        verbose_name='Дата публикации',
+        auto_now_add=True,
+        db_index=True,
+    )
+
+    def __str__(self):
+        return self.text[:COM_LEN]
+
+    class Meta:
+        ordering = ['-pub_date']
+
