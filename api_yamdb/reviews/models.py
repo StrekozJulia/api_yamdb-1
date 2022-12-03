@@ -1,37 +1,10 @@
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from django.utils.translation import ugettext_lazy as _
 
 SLUG_LEN = 50
 NAME_LEN = 256
 USER_LEN = 150
-
-
-class UserManager(BaseUserManager):
-    """Кастомный юзер менеджер"""
-    def create_user(self, email, username, **extra_fields):
-        """Создаём пользователя с username и email."""
-        if User.objects.get(email=email):
-            raise ValueError(_('Такой email уже существует'))
-        email = self.normalize_email(email)
-        user = self.model(email=email, username=username, **extra_fields)
-        user.set_unusable_password()
-        user.save()
-        return user
-
-    def create_superuser(self, email, password, username, **extra_fields):
-        """Создаём суперпользователя и присваиваем ему роль админ."""
-        extra_fields.setdefault('is_staff', True)
-        extra_fields.setdefault('is_superuser', True)
-        extra_fields.setdefault('is_active', True)
-        if User.objects.get(email=email):
-            raise ValueError(_('Такой email уже существует'))
-        user = self.model(email=email, username=username, **extra_fields)
-        user.set_password(password)
-        user.role = 'admin'
-        user.save()
-        return user
 
 
 class User(AbstractUser):
@@ -57,7 +30,6 @@ class User(AbstractUser):
     role = models.CharField('Роль',
                             max_length=max(len(role) for role, _ in ROLES),
                             choices=ROLES, default=USER)
-    objects = UserManager()
 
 
 class Characteristic(models.Model):
