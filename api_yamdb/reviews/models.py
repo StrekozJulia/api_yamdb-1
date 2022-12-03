@@ -120,7 +120,7 @@ class Review(models.Model):
         verbose_name='Автор отзыва',
     )
     text = models.TextField(
-        max_length=1000,
+        max_length=2500,
         verbose_name='Текст отзыва',
         help_text='Добавьте Ваш отзыв'
     )
@@ -171,6 +171,7 @@ class Comment(models.Model):
         verbose_name='Автор комментария',
     )
     text = models.TextField(
+        max_length=500,
         verbose_name='Текст комментария',
         help_text='Добавьте Ваш комментарий'
     )
@@ -185,4 +186,3 @@ class Comment(models.Model):
 
     class Meta:
         ordering = ['-pub_date']
-
