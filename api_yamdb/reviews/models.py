@@ -154,6 +154,8 @@ class Review(models.Model):
 
 
 class Comment(models.Model):
+    """Модель Comment, привязанная к определённому отзыву."""
+
     review = models.ForeignKey(
         Review,
         on_delete=models.CASCADE,
