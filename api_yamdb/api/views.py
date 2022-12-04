@@ -69,6 +69,17 @@ class TitleViewSet(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend,)
     filterset_fields = ('name', 'year', 'genre__slug', 'category__slug')
 
+    
+    def perform_create(self, serializer):
+        category_slug = self.request.data['category']
+        genre_slugs = self.request.data['genre']
+        genre_list=[]
+        category = get_object_or_404(Category, slug=category_slug)
+        for genre_slug in genre_slugs:
+            genre_list.append(get_object_or_404(Genre, slug=genre_slug))
+        serializer.save(category=category, genre=genre_list)
+    
+
 
 class CategoryViewSet(mixins.ListModelMixin,
                       mixins.CreateModelMixin,

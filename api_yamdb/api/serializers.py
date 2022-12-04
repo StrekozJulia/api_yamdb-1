@@ -35,17 +35,35 @@ class ReceiveTokenSerializer(serializers.Serializer):
     confirmation_code = serializers.CharField()
 
 
-class TitleSerializer(serializers.ModelSerializer):
-    category = serializers.SlugRelatedField(
-        slug_field='slug',
-        queryset=Category.objects.all()
-    )
+class CategorySerializer(serializers.ModelSerializer):
 
-    genre = serializers.SlugRelatedField(
-        slug_field='slug',
-        many=True,
-        queryset=Genre.objects.all()
-    )
+    class Meta:
+        fields = ('name', 'slug')
+        model = Category
+        lookup_field = 'slug'
+
+
+class GenreSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        fields = ('name', 'slug')
+        model = Genre
+        lookup_field = 'slug'
+
+
+class TitleSerializer(serializers.ModelSerializer):
+    # category = serializers.SlugRelatedField(
+    #     slug_field='slug',
+    #     queryset=Category.objects.all()
+    # )
+
+    # genre = serializers.SlugRelatedField(
+    #     slug_field='slug',
+    #     many=True,
+    #     queryset=Genre.objects.all()
+    # )
+    category = CategorySerializer(read_only=True)
+    genre = GenreSerializer(many=True, read_only=True)
 
     class Meta:
         fields = '__all__'
@@ -58,22 +76,6 @@ class TitleSerializer(serializers.ModelSerializer):
                 'Год выпуска произведения позже текущего!'
             )
         return value
-
-
-class CategorySerializer(serializers.ModelSerializer):
-
-    class Meta:
-        fields = '__all__'
-        model = Category
-        lookup_field = 'slug'
-
-
-class GenreSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        fields = '__all__'
-        model = Genre
-        lookup_field = 'slug'
 
 
 class UsersSerializer(serializers.ModelSerializer):
