@@ -124,7 +124,7 @@ class Review(models.Model):
         verbose_name='Текст отзыва',
         help_text='Добавьте Ваш отзыв'
     )
-    score = models.IntegerField(
+    rating = models.PositiveIntegerField(
         validators=(
             MinValueValidator(1),
             MaxValueValidator(100),

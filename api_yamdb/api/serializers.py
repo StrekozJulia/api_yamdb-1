@@ -100,6 +100,7 @@ class UserProfileSerializer(UsersSerializer):
 
 
 class ReviewSerializer(serializers.ModelSerializer):
+    """Изменение данных отзыва."""
     title = serializers.SlugRelatedField(
         slug_field='name',
         read_only=True
@@ -109,7 +110,7 @@ class ReviewSerializer(serializers.ModelSerializer):
         read_only=True
     )
 
-    def validate_correct_score(self, value):
+    def validate_correct_rating(self, value):
         if 1 <= value <= 100:
             raise serializers.ValidationError('Поставьте оценку от 1 до 100.')
         return value
@@ -133,6 +134,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 
 class CommentSerializer(serializers.ModelSerializer):
+    """Изменение данных комментария."""
     review = serializers.SlugRelatedField(
         slug_field='text',
         read_only=True
