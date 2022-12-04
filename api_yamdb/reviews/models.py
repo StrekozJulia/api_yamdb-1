@@ -1,4 +1,3 @@
-from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
@@ -28,8 +27,19 @@ class User(AbstractUser):
                                  blank=True)
     bio = models.TextField('Биография', blank=True)
     role = models.CharField('Роль',
-                            max_length=max(len(role) for role, _ in ROLES),
+                            max_length=SLUG_LEN,
                             choices=ROLES, default=USER)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['username', 'email'],
+                name='unique_name_email'
+            )
+        ]
+
+    def __str__(self):
+        return self.username
 
 
 class Characteristic(models.Model):
