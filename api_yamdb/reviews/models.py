@@ -1,6 +1,8 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
+from .managers import CustomUserManager
+
 SLUG_LEN = 50
 NAME_LEN = 256
 USER_LEN = 150
@@ -29,14 +31,25 @@ class User(AbstractUser):
     role = models.CharField('Роль',
                             max_length=SLUG_LEN,
                             choices=ROLES, default=USER)
+    created_by_admin = models.BooleanField(default=False)
+    object = CustomUserManager()
 
     class Meta:
+        ordering = ('id',)
         constraints = [
             models.UniqueConstraint(
                 fields=['username', 'email'],
                 name='unique_name_email'
             )
         ]
+
+    @property
+    def is_moderator(self):
+        return self.role == self.MODERATOR
+
+    @property
+    def is_admin(self):
+        return self.role == self.ADMIN or self.is_superuser
 
     def __str__(self):
         return self.username

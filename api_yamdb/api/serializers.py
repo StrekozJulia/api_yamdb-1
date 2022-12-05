@@ -12,12 +12,18 @@ class SingUpSerializer(serializers.Serializer):
 
     email = serializers.EmailField(
         required=True,
-        validators=[UniqueValidator(queryset=User.objects.all())]
+        validators=[
+            UniqueValidator(queryset=User.objects.filter(
+                created_by_admin=False))
+        ]
     )
     username = serializers.CharField(
         required=True,
-        validators=[UsernameValidator(),
-                    UniqueValidator(queryset=User.objects.all())]
+        validators=[
+            UsernameValidator(),
+            UniqueValidator(queryset=User.objects.filter(
+                created_by_admin=False))
+        ]
     )
 
     def validate_username(self, value):
