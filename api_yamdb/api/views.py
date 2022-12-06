@@ -9,7 +9,9 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
+
 from reviews.models import Category, Genre, Title, User, Review
+from .filters import TitleFilter
 
 from .permissions import (AdminOrReadOnly, IsAdmin,
                           IsAuthorIsAdminIsModeratorOrReadOnly)
@@ -70,7 +72,20 @@ class TitleViewSet(viewsets.ModelViewSet):
     serializer_class = TitleSerializer
     permission_classes = (AdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('name', 'year', 'genre__slug', 'category__slug')
+    filterset_class = TitleFilter
+
+    
+    def perform_create(self, serializer):
+        category_slug = self.request.data['category']
+        genre_slugs = self.request.data.getlist('genre')
+        genre_list=[]
+        category = get_object_or_404(Category, slug=category_slug)
+        for genre_slug in genre_slugs:
+            genre_list.append(get_object_or_404(Genre, slug=genre_slug))
+        serializer.save(category=category, genre=genre_list)
+
+    perform_update = perform_create
+    
 
 
 class CategoryViewSet(mixins.ListModelMixin,
