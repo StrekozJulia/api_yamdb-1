@@ -121,7 +121,7 @@ class Command(BaseCommand):
                     title=title,
                     text=row[2],
                     author=author,
-                    rating=row[4],
+                    score=row[4],
                     pub_date=row[5]
                 )
 
