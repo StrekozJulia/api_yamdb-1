@@ -2,6 +2,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 SLUG_LEN = 50
 NAME_LEN = 256
@@ -127,11 +128,11 @@ class Review(models.Model):
     rating = models.PositiveIntegerField(
         validators=(
             MinValueValidator(1),
-            MaxValueValidator(100),
+            MaxValueValidator(10),
         ),
         default=75,
         error_messages=(
-            {'validators': 'Поставьте оценку от 1 до 100.'}
+            {'validators': 'Поставьте оценку от 1 до 10.'}
         ),
         verbose_name='Оценка произведения',
         help_text='Поставьте оценку'
