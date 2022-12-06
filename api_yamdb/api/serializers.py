@@ -112,9 +112,11 @@ class ReviewSerializer(serializers.ModelSerializer):
         validators=[UniqueTogetherValidator('author', 'title')]
     )
 
-    def validate_correct_rating(self, value):
-        if 1 <= value <= 10:
-            raise serializers.ValidationError('Поставьте оценку от 1 до 10.')
+    def validate_score(self, value):
+        if not 1 <= value <= 10:
+            raise serializers.ValidationError(
+                'Оценкой должна быть в диапазоне от 1 до 10.'
+            )
         return value
 
     def validate(self, data):
