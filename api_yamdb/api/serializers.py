@@ -2,7 +2,7 @@ import datetime
 
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
-from rest_framework.validators import UniqueValidator
+from rest_framework.validators import UniqueTogetherValidator, UniqueValidator
 from reviews.models import Category, Comment, Genre, Review, Title, User
 
 from .validators import UsernameValidator
@@ -108,7 +108,8 @@ class ReviewSerializer(serializers.ModelSerializer):
     )
     author = serializers.SlugRelatedField(
         slug_field='username',
-        read_only=True
+        read_only=True,
+        validators=[UniqueTogetherValidator('author', 'title')]
     )
 
     def validate_correct_rating(self, value):
@@ -116,7 +117,7 @@ class ReviewSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Поставьте оценку от 1 до 10.')
         return value
 
-    def validate_unique_name(self, data):
+    def validate(self, data):
         request = self.context.get('request')
 
         if request.method == 'POST':
