@@ -9,17 +9,15 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
+from reviews.models import Category, Genre, Review, Title, User
 
-from reviews.models import Category, Genre, Title, User, Review
 from .filters import TitleFilter
-
 from .permissions import (AdminOrReadOnly, IsAdmin,
                           IsAuthorIsAdminIsModeratorOrReadOnly)
-from .serializers import (CategorySerializer, GenreSerializer,
-                          ReceiveTokenSerializer, SingUpSerializer,
-                          TitleSerializer, UserProfileSerializer,
-                          UsersSerializer, ReviewSerializer,
-                          CommentSerializer)
+from .serializers import (CategorySerializer, CommentSerializer,
+                          GenreSerializer, ReceiveTokenSerializer,
+                          ReviewSerializer, SingUpSerializer, TitleSerializer,
+                          UserProfileSerializer, UsersSerializer)
 
 
 class SignUp(views.APIView):
@@ -78,18 +76,16 @@ class TitleViewSet(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
 
-    
     def perform_create(self, serializer):
         category_slug = self.request.data['category']
         genre_slugs = self.request.data.getlist('genre')
-        genre_list=[]
+        genre_list = []
         category = get_object_or_404(Category, slug=category_slug)
         for genre_slug in genre_slugs:
             genre_list.append(get_object_or_404(Genre, slug=genre_slug))
         serializer.save(category=category, genre=genre_list)
 
     perform_update = perform_create
-    
 
 
 class CategoryViewSet(mixins.ListModelMixin,
@@ -144,14 +140,14 @@ class UsersViewSet(viewsets.ModelViewSet):
         serializer = UserProfileSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-
     def perform_create(self, serializer):
         serializer.save(created_by_admin=True)
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly, IsAuthorIsAdminIsModeratorOrReadOnly,)
+    permission_classes = (IsAuthenticatedOrReadOnly,
+                          IsAuthorIsAdminIsModeratorOrReadOnly)
 
     def get_queryset(self):
         title = get_object_or_404(
@@ -170,7 +166,8 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly, IsAuthorIsAdminIsModeratorOrReadOnly,)
+    permission_classes = (IsAuthenticatedOrReadOnly,
+                          IsAuthorIsAdminIsModeratorOrReadOnly)
 
     def get_queryset(self):
         review = get_object_or_404(
