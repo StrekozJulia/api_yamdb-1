@@ -6,9 +6,11 @@ class AdminOrReadOnly(permissions.BasePermission):
     message = 'Данное действие доступно только администратору.'
 
     def has_permission(self, request, view):
+        if request.user.is_authenticated:
+            return (request.method in permissions.SAFE_METHODS
+                    or request.user.is_admin)
+        return request.method in permissions.SAFE_METHODS
 
-        return (request.method in permissions.SAFE_METHODS
-                or request.user.is_admin)
 
 
 class IsAuthorIsAdminIsModeratorOrReadOnly(permissions.BasePermission):
@@ -19,11 +21,17 @@ class IsAuthorIsAdminIsModeratorOrReadOnly(permissions.BasePermission):
 
     message = 'У вас недостаточно прав для выполнения данного действия.'
 
-    def has_object_permission(self, request, view, obj):
+    def has_permission(self, request, view):
         return (request.method in permissions.SAFE_METHODS
-                or obj.author == request.user
-                or request.user.is_admin
-                or request.user.is_moderator)
+            or request.user.is_authenticated)
+    
+    def has_obj_permission(self, request, view, obj):
+        if request.user.is_authenticated:
+            return (request.method in permissions.SAFE_METHODS
+                    or request.user.is_admin
+                    or request.user.is_moderator
+                    or obj.author == request.user)
+        return request.method in permissions.SAFE_METHODS
 
 
 class IsAdmin(permissions.BasePermission):

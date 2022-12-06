@@ -6,15 +6,20 @@ from rest_framework import (filters, mixins, permissions, status, views,
                             viewsets)
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
-from reviews.models import Category, Genre, Title, User
 
-from .permissions import AdminOrReadOnly, IsAdmin
+from reviews.models import Category, Genre, Title, User, Review
+from .filters import TitleFilter
+
+from .permissions import (AdminOrReadOnly, IsAdmin,
+                          IsAuthorIsAdminIsModeratorOrReadOnly)
 from .serializers import (CategorySerializer, GenreSerializer,
                           ReceiveTokenSerializer, SingUpSerializer,
                           TitleSerializer, UserProfileSerializer,
-                          UsersSerializer)
+                          UsersSerializer, ReviewSerializer,
+                          CommentSerializer)
 
 
 class SignUp(views.APIView):
@@ -71,7 +76,20 @@ class TitleViewSet(viewsets.ModelViewSet):
     serializer_class = TitleSerializer
     permission_classes = (AdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('name', 'year', 'genre__slug', 'category__slug')
+    filterset_class = TitleFilter
+
+    
+    def perform_create(self, serializer):
+        category_slug = self.request.data['category']
+        genre_slugs = self.request.data.getlist('genre')
+        genre_list=[]
+        category = get_object_or_404(Category, slug=category_slug)
+        for genre_slug in genre_slugs:
+            genre_list.append(get_object_or_404(Genre, slug=genre_slug))
+        serializer.save(category=category, genre=genre_list)
+
+    perform_update = perform_create
+    
 
 
 class CategoryViewSet(mixins.ListModelMixin,
@@ -126,5 +144,44 @@ class UsersViewSet(viewsets.ModelViewSet):
         serializer = UserProfileSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
     def perform_create(self, serializer):
         serializer.save(created_by_admin=True)
+
+
+class ReviewViewSet(viewsets.ModelViewSet):
+    serializer_class = ReviewSerializer
+    permission_classes = (IsAuthenticatedOrReadOnly, IsAuthorIsAdminIsModeratorOrReadOnly,)
+
+    def get_queryset(self):
+        title = get_object_or_404(
+            Title,
+            pk=self.kwargs.get('title_id')
+        )
+        return title.reviews.all()
+
+    def perform_create(self, serializer):
+        title = get_object_or_404(
+            Title,
+            pk=self.kwargs.get('title_id')
+        )
+        serializer.save(author=self.request.user, title=title)
+
+
+class CommentViewSet(viewsets.ModelViewSet):
+    serializer_class = CommentSerializer
+    permission_classes = (IsAuthenticatedOrReadOnly, IsAuthorIsAdminIsModeratorOrReadOnly,)
+
+    def get_queryset(self):
+        review = get_object_or_404(
+            Review,
+            pk=self.kwargs.get('review_id')
+        )
+        return review.comments.all()
+
+    def perform_create(self, serializer):
+        review = get_object_or_404(
+            Review,
+            pk=self.kwargs.get('review_id')
+        )
+        serializer.save(author=self.request.user, review=review)
