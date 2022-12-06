@@ -1,4 +1,3 @@
-import csv
 from django.core.management import BaseCommand
 from django.utils import timezone
 from reviews.models import (Category,
@@ -36,6 +35,10 @@ class Command(BaseCommand):
                     slug=row[2]
                 )
 
+        self.stdout.write(
+            self.style.SUCCESS("Sucess importing category.csv.")
+        )
+
         # Импортируем жанры
         with open(
             f'{folder_path}genre.csv', "r", encoding='utf-8'
@@ -47,6 +50,10 @@ class Command(BaseCommand):
                     name=row[1],
                     slug=row[2]
                 )
+
+        self.stdout.write(
+            self.style.SUCCESS("Sucess importing genre.csv.")
+        )
 
         # Импортируем произведения
         with open(
@@ -62,6 +69,10 @@ class Command(BaseCommand):
                     category=category
                 )
 
+        self.stdout.write(
+            self.style.SUCCESS("Sucess importing titles.csv.")
+        )
+
         # Импортируем таблицу связей произведение/жанр
         with open(
             f'{folder_path}genre_title.csv', "r", encoding='utf-8'
@@ -72,6 +83,10 @@ class Command(BaseCommand):
                     title=Title.objects.get(pk=row[1]),
                     genre=Genre.objects.get(pk=row[2])
                 )
+
+        self.stdout.write(
+            self.style.SUCCESS("Sucess importing genre_title.csv.")
+        )
 
         # Импортируем таблицу пользователей
         with open(
@@ -89,12 +104,8 @@ class Command(BaseCommand):
                     last_name=row[6]
                 )
 
-        end_time = timezone.now()
         self.stdout.write(
-            self.style.SUCCESS(
-                f"Loading CSV took: {(end_time-start_time).total_seconds()}"
-                " seconds."
-            )
+            self.style.SUCCESS("Sucess importing users.csv.")
         )
 
         # Импортируем отзывы на произведения
@@ -110,9 +121,13 @@ class Command(BaseCommand):
                     title=title,
                     text=row[2],
                     author=author,
-                    score=row[4],
+                    rating=row[4],
                     pub_date=row[5]
                 )
+
+        self.stdout.write(
+            self.style.SUCCESS("Sucess importing review.csv.")
+        )
 
         # Импортируем комментарии к отзывам на произведения
         with open(
@@ -129,3 +144,15 @@ class Command(BaseCommand):
                     author=author,
                     pub_date=row[4]
                 )
+
+        self.stdout.write(
+            self.style.SUCCESS("Sucess importing comments.csv.")
+        )
+
+        end_time = timezone.now()
+        self.stdout.write(
+            self.style.SUCCESS(
+                f"Loading CSV took: {(end_time-start_time).total_seconds()}"
+                " seconds."
+            )
+        )
