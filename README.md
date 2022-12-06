@@ -72,6 +72,12 @@ cd api_yamdb
 python manage.py migrate
 ```
 
+Наполнить базу данных из файлов CSV:
+```
+cd api_yamdb
+python manage.py importcsv .../static/data/ (ваш путь к папке с файлами импорта)
+```
+
 Запустить проект:
 ```
 python manage.py runserver
@@ -79,6 +85,41 @@ python manage.py runserver
 
 ## Документация:
 Доступна по адресу /redoc/
+
+## Доступные запросы к API:
+
++ http://127.0.0.1.8000/api/v1/categories/ - просмотр и создание категорий
+    Тип запроса: GET (доступно без токена), POST (администратор)
+    Передаваемые данные (POST): {"name": string, 
+                                 "slug": string}
+
++ http://127.0.0.1.8000/api/v1/categories/{slug}/ - удаление категории
+    Тип запроса: DELETE (администратор)
+
++ http://127.0.0.1.8000/api/v1/genres/ - просмотр и создание жанров
+    Тип запроса: GET (доступно без токена), POST (администратор)
+    Передаваемые данные (POST): {"name": string, 
+                                 "slug": string}
+
++ http://127.0.0.1.8000/api/v1/genres/{slug}/ - удаление жанра
+    Тип запроса: DELETE (администратор)
+
++ http://127.0.0.1.8000/api/v1/titles/ - просмотр и создание произведений
+    Тип запроса: GET (доступно без токена), POST (администратор)
+    Передаваемые данные (POST): {"name": string,
+                                 "year": integer, 
+                                 "genre": array of strings,
+                                 "category": string,
+                                 "description": string}
+
++ http://127.0.0.1.8000/api/v1/titles/{title_id} - просмотр, редактирование и удаление произведений
+    Тип запроса: GET (доступно без токена), PATCH, DELETE (администратор)
+    Передаваемые данные (PATCH): {"name": string,
+                                 "year": integer, 
+                                 "genre": array of strings,
+                                 "category": string,
+                                 "description": string}
+
 
 ## Авторы:
 - [Илиан Ляпота Тимлид, Python-разработчик](https://github.com/IlianL)
