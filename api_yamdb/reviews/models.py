@@ -1,7 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-from django.core.validators import MaxValueValidator, MinValueValidator
 
 from .managers import CustomUserManager
 
@@ -148,12 +147,12 @@ class Review(models.Model):
         verbose_name='Текст отзыва',
         help_text='Добавьте Ваш отзыв'
     )
-    rating = models.PositiveIntegerField(
+    score = models.PositiveIntegerField(
         validators=(
             MinValueValidator(1),
             MaxValueValidator(10),
         ),
-        default=75,
+        default=1,
         error_messages=(
             {'validators': 'Поставьте оценку от 1 до 10.'}
         ),
@@ -172,7 +171,7 @@ class Review(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=('title', 'author',),
+                fields=('title', 'author'),
                 name='unique_review',
             )
         ]
