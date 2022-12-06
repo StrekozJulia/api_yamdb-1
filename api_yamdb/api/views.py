@@ -35,6 +35,10 @@ class SignUp(views.APIView):
             username=serializer.validated_data.get('username'),
             email=serializer.validated_data.get('email')
         )
+        if not created:
+            user.created_by_admin = False
+            user.save()
+
         confirmation_code = default_token_generator.make_token(user)
         send_mail(
             'Код подтверждения api_yamdb',
@@ -139,6 +143,10 @@ class UsersViewSet(viewsets.ModelViewSet):
 
         serializer = UserProfileSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+    def perform_create(self, serializer):
+        serializer.save(created_by_admin=True)
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
