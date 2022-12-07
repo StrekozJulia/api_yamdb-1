@@ -17,9 +17,10 @@ from .filters import TitleFilter
 from .permissions import (AdminOrReadOnly, IsAdmin,
                           IsAuthorAdminModeratorOrReadOnly)
 from .serializers import (CategorySerializer, CommentSerializer,
-                          GenreSerializer, ReceiveTokenSerializer,
-                          ReviewSerializer, SingUpSerializer, TitleSerializer,
-                          UserProfileSerializer, UsersSerializer)
+                          GenreSerializer, ReadTitleSerializer,
+                          ReceiveTokenSerializer, ReviewSerializer,
+                          SingUpSerializer, UserProfileSerializer,
+                          UsersSerializer, WriteTitleSerializer)
 
 
 class SignUp(views.APIView):
@@ -67,21 +68,14 @@ class TitleViewSet(viewsets.ModelViewSet):
     """Просмотр, создание, редактирование и удаление произведений"""
 
     queryset = Title.objects.annotate(rating=Avg('reviews__score'))
-    serializer_class = TitleSerializer
     permission_classes = (AdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
 
-    def perform_create(self, serializer):
-        category_slug = self.request.data['category']
-        genre_slugs = self.request.data.getlist('genre')
-        genre_list = []
-        category = get_object_or_404(Category, slug=category_slug)
-        for genre_slug in genre_slugs:
-            genre_list.append(get_object_or_404(Genre, slug=genre_slug))
-        serializer.save(category=category, genre=genre_list)
-
-    perform_update = perform_create
+    def get_serializer_class(self):
+        if self.action in permissions.SAFE_METHODS:
+            return ReadTitleSerializer
+        return WriteTitleSerializer
 
 
 class ListCreateDestroy(mixins.ListModelMixin,
