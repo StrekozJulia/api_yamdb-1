@@ -185,7 +185,7 @@ class Review(models.Model):
                 fields=('title', 'author'),
                 name='unique_review',
             )
-        ],
+        ]
         ordering = ['-pub_date']
 
 
