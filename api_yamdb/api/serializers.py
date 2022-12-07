@@ -1,9 +1,9 @@
 import datetime
 
-from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator, UniqueValidator
-from reviews.models import Category, Comment, Genre, Review, Title, User
+from reviews.models import Category, Comment, Genre, Review, Title
+from users.models import User
 
 from .validators import UsernameValidator
 
@@ -12,18 +12,10 @@ class SingUpSerializer(serializers.Serializer):
 
     email = serializers.EmailField(
         required=True,
-        validators=[
-            UniqueValidator(queryset=User.objects.filter(
-                created_by_admin=False))
-        ]
     )
     username = serializers.CharField(
         required=True,
-        validators=[
-            UsernameValidator(),
-            UniqueValidator(queryset=User.objects.filter(
-                created_by_admin=False))
-        ]
+        validators=[UsernameValidator()]
     )
 
     def validate_username(self, value):
@@ -32,6 +24,20 @@ class SingUpSerializer(serializers.Serializer):
                 "Имя пользователя не может быть 'me'"
             )
         return value
+
+    def validate(self, attrs):
+        if (User.object.filter(username=attrs.get('username')).exists()
+                and not User.object.filter(email=attrs.get('email')).exists()):
+            raise serializers.ValidationError(
+                "Пользователь с таким username уже есть."
+            )
+        elif (User.object.filter(email=attrs.get('email')).exists()
+                and not User.object.filter(
+                    username=attrs.get('username')).exists()):
+            raise serializers.ValidationError(
+                "Пользователь с таким email уже есть."
+            )
+        return attrs
 
 
 class ReceiveTokenSerializer(serializers.Serializer):
@@ -56,15 +62,37 @@ class GenreSerializer(serializers.ModelSerializer):
         lookup_field = 'slug'
 
 
-class TitleSerializer(serializers.ModelSerializer):
+class ReadTitleSerializer(serializers.ModelSerializer):
 
     rating = serializers.IntegerField(read_only=True)
     category = CategorySerializer(read_only=True)
     genre = GenreSerializer(many=True, read_only=True)
 
     class Meta:
-        fields = '__all__'
         model = Title
+        fields = '__all__'
+        read_only_fields = (
+            'id', 'name', 'year',
+            'rating', 'description',
+            'genre', 'category')
+
+
+class WriteTitleSerializer(serializers.ModelSerializer):
+
+    rating = serializers.IntegerField(required=False)
+    category = serializers.SlugRelatedField(
+        slug_field='slug',
+        queryset=Category.objects.all()
+    )
+    genre = serializers.SlugRelatedField(
+        slug_field='slug',
+        many=True,
+        queryset=Genre.objects.all()
+    )
+
+    class Meta:
+        model = Title
+        fields = '__all__'
 
     def validate_year(self, value):
         """Проверка корректности года выпуска."""
@@ -119,19 +147,18 @@ class ReviewSerializer(serializers.ModelSerializer):
             )
         return value
 
-    def validate(self, data):
+    def validate(self, attrs):
         request = self.context.get('request')
 
-        if request.method == 'POST':
+        if not self.instance:
             title_id = self.context['view'].kwargs.get('title_id')
-            title = get_object_or_404(Title, pk=title_id)
             if Review.objects.filter(
-                    author=request.user, title=title).exists():
+                    author=request.user, title__id=title_id).exists():
                 raise serializers.ValidationError(
                     'Вы можете написать только один отзыв '
                     'к данному произведению.'
                 )
-        return data
+        return attrs
 
     class Meta:
         model = Review

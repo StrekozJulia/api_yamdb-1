@@ -24,8 +24,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'django_filters',
+    'users.apps.UsersConfig',
     'api.apps.ApiConfig',
     'reviews.apps.ReviewsConfig',
+
 ]
 
 MIDDLEWARE = [
@@ -89,7 +91,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # User
 
-AUTH_USER_MODEL = 'reviews.User'
+AUTH_USER_MODEL = 'users.User'
 
 # Internationalization
 

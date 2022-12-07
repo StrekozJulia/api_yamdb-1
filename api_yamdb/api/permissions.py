@@ -12,7 +12,7 @@ class AdminOrReadOnly(permissions.BasePermission):
         return request.method in permissions.SAFE_METHODS
 
 
-class IsAuthorIsAdminIsModeratorOrReadOnly(permissions.BasePermission):
+class IsAuthorAdminModeratorOrReadOnly(permissions.BasePermission):
     """
     Проверяем является ли пользователь автором,
     модератором или администратором. Для отзывов, комментариев.

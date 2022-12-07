@@ -10,15 +10,17 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
-from reviews.models import Category, Genre, Review, Title, User
+from reviews.models import Category, Genre, Review, Title
+from users.models import User
 
 from .filters import TitleFilter
 from .permissions import (AdminOrReadOnly, IsAdmin,
-                          IsAuthorIsAdminIsModeratorOrReadOnly)
+                          IsAuthorAdminModeratorOrReadOnly)
 from .serializers import (CategorySerializer, CommentSerializer,
-                          GenreSerializer, ReceiveTokenSerializer,
-                          ReviewSerializer, SingUpSerializer, TitleSerializer,
-                          UserProfileSerializer, UsersSerializer)
+                          GenreSerializer, ReadTitleSerializer,
+                          ReceiveTokenSerializer, ReviewSerializer,
+                          SingUpSerializer, UserProfileSerializer,
+                          UsersSerializer, WriteTitleSerializer)
 
 
 class SignUp(views.APIView):
@@ -26,17 +28,11 @@ class SignUp(views.APIView):
 
     def post(self, request):
         serializer = SingUpSerializer(data=request.data)
-        if not serializer.is_valid():
-            return Response(serializer.errors,
-                            status=status.HTTP_400_BAD_REQUEST)
-
+        serializer.is_valid(raise_exception=True)
         user, created = User.objects.get_or_create(
             username=serializer.validated_data.get('username'),
             email=serializer.validated_data.get('email')
         )
-        if not created:
-            user.created_by_admin = False
-            user.save()
 
         confirmation_code = default_token_generator.make_token(user)
         send_mail(
@@ -72,27 +68,24 @@ class TitleViewSet(viewsets.ModelViewSet):
     """Просмотр, создание, редактирование и удаление произведений"""
 
     queryset = Title.objects.annotate(rating=Avg('reviews__score'))
-    serializer_class = TitleSerializer
     permission_classes = (AdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
 
-    def perform_create(self, serializer):
-        category_slug = self.request.data['category']
-        genre_slugs = self.request.data.getlist('genre')
-        genre_list = []
-        category = get_object_or_404(Category, slug=category_slug)
-        for genre_slug in genre_slugs:
-            genre_list.append(get_object_or_404(Genre, slug=genre_slug))
-        serializer.save(category=category, genre=genre_list)
-
-    perform_update = perform_create
+    def get_serializer_class(self):
+        if self.request.method in permissions.SAFE_METHODS:
+            return ReadTitleSerializer
+        return WriteTitleSerializer
 
 
-class CategoryViewSet(mixins.ListModelMixin,
-                      mixins.CreateModelMixin,
-                      mixins.DestroyModelMixin,
-                      viewsets.GenericViewSet):
+class ListCreateDestroy(mixins.ListModelMixin,
+                        mixins.CreateModelMixin,
+                        mixins.DestroyModelMixin,
+                        viewsets.GenericViewSet):
+    pass
+
+
+class CategoryViewSet(ListCreateDestroy):
     """Просмотр, создание и удаление категорий произведений"""
 
     queryset = Category.objects.all()
@@ -103,10 +96,7 @@ class CategoryViewSet(mixins.ListModelMixin,
     lookup_field = 'slug'
 
 
-class GenreViewSet(mixins.ListModelMixin,
-                   mixins.CreateModelMixin,
-                   mixins.DestroyModelMixin,
-                   viewsets.GenericViewSet):
+class GenreViewSet(ListCreateDestroy):
     """Просмотр, создание и удаление категорий произведений"""
 
     queryset = Genre.objects.all()
@@ -132,9 +122,7 @@ class UsersViewSet(viewsets.ModelViewSet):
         if request.method == 'PATCH':
             serializer = UserProfileSerializer(user, data=request.data,
                                                partial=True)
-            if not serializer.is_valid():
-                return Response(serializer.errors,
-                                status=status.HTTP_400_BAD_REQUEST)
+            serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -142,13 +130,13 @@ class UsersViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def perform_create(self, serializer):
-        serializer.save(created_by_admin=True)
+        serializer.save(created_by='admin')
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,
-                          IsAuthorIsAdminIsModeratorOrReadOnly)
+                          IsAuthorAdminModeratorOrReadOnly)
 
     def get_queryset(self):
         title = get_object_or_404(
@@ -168,7 +156,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,
-                          IsAuthorIsAdminIsModeratorOrReadOnly)
+                          IsAuthorAdminModeratorOrReadOnly)
 
     def get_queryset(self):
         review = get_object_or_404(
