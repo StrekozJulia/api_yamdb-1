@@ -24,13 +24,14 @@ class SingUpSerializer(serializers.Serializer):
                 "Имя пользователя не может быть 'me'"
             )
         return value
+
     def validate(self, attrs):
-        if (User.object.filter(username=attrs.get('username')).exists() 
+        if (User.object.filter(username=attrs.get('username')).exists()
                 and not User.object.filter(email=attrs.get('email')).exists()):
             raise serializers.ValidationError(
                 "Пользователь с таким username уже есть."
             )
-        elif (User.object.filter(email=attrs.get('email')).exists() 
+        elif (User.object.filter(email=attrs.get('email')).exists()
                 and not User.object.filter(
                     username=attrs.get('username')).exists()):
             raise serializers.ValidationError(
@@ -70,7 +71,10 @@ class ReadTitleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Title
         fields = '__all__'
-        read_only_fields = '__all__'
+        read_only_fields = (
+            'id', 'name', 'year',
+            'rating', 'description',
+            'genre', 'category')
 
 
 class WriteTitleSerializer(serializers.ModelSerializer):
@@ -78,7 +82,7 @@ class WriteTitleSerializer(serializers.ModelSerializer):
     rating = serializers.IntegerField(required=False)
     category = serializers.SlugRelatedField(
         slug_field='slug',
-        queryset=Category.objects.all(),
+        queryset=Category.objects.all()
     )
     genre = serializers.SlugRelatedField(
         slug_field='slug',
@@ -89,7 +93,7 @@ class WriteTitleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Title
         fields = '__all__'
-    
+
     def validate_year(self, value):
         """Проверка корректности года выпуска."""
         if value > datetime.datetime.now().year:

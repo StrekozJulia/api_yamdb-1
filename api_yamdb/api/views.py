@@ -73,15 +73,15 @@ class TitleViewSet(viewsets.ModelViewSet):
     filterset_class = TitleFilter
 
     def get_serializer_class(self):
-        if self.action in permissions.SAFE_METHODS:
+        if self.action in ('list', 'retrieve'):
             return ReadTitleSerializer
         return WriteTitleSerializer
 
 
 class ListCreateDestroy(mixins.ListModelMixin,
-                      mixins.CreateModelMixin,
-                      mixins.DestroyModelMixin,
-                      viewsets.GenericViewSet):
+                        mixins.CreateModelMixin,
+                        mixins.DestroyModelMixin,
+                        viewsets.GenericViewSet):
     pass
 
 
