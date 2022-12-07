@@ -16,10 +16,19 @@ class User(AbstractUser):
     ADMIN = 'admin'
     MODERATOR = 'moderator'
     USER = 'user'
+    WEB = 'web'
+    APP = 'appp'
+
     ROLES = [
         (ADMIN, 'Администратор'),
         (MODERATOR, 'Модератор'),
         (USER, 'Пользователь'),
+    ]
+
+    CREATED = [
+        (ADMIN, 'Администратор'),
+        (WEB, 'Веб'),
+        (APP, 'Приложение'),
     ]
 
     username = models.CharField('Имя пользователя', max_length=USER_LEN,
@@ -33,7 +42,9 @@ class User(AbstractUser):
     role = models.CharField('Роль',
                             max_length=SLUG_LEN,
                             choices=ROLES, default=USER)
-    created_by_admin = models.BooleanField(default=False)
+    created_by = models.CharField('Источник создания пользователя',
+                                  max_length=SLUG_LEN,
+                                  choices=CREATED, default=APP)
     object = CustomUserManager()
 
     class Meta:
