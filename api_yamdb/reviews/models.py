@@ -19,7 +19,7 @@ class Characteristic(models.Model):
     name = models.CharField('Название', max_length=NAME_LEN,
                             unique=True, blank=False, null=False,
                             db_index=True)
-    slug = models.SlugField('Слаг', max_length=SLUG_LEN,
+    slug = models.SlugField('Адрес', max_length=SLUG_LEN,
                             unique=True, blank=False, null=False)
 
     def __str__(self):
