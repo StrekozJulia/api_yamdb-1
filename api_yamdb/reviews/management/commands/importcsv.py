@@ -2,8 +2,8 @@ import csv
 
 from django.core.management import BaseCommand
 from django.utils import timezone
-from reviews.models import (Category, Comment, Genre, GenreTitle, Review,
-                            Title, User)
+from reviews.models import Category, Comment, Genre, GenreTitle, Review, Title
+from users.models import User
 
 
 class Command(BaseCommand):
