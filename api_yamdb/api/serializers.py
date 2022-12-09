@@ -26,7 +26,11 @@ class SingUpSerializer(serializers.Serializer):
         return value
 
     def validate(self, attrs):
-        if (User.object.filter(username=attrs.get('username')).exists()
+        if User.object.filter(
+                username=attrs.get('username'),
+                email=attrs.get('email')).exists():
+            pass
+        elif (User.object.filter(username=attrs.get('username')).exists()
                 and not User.object.filter(email=attrs.get('email')).exists()):
             raise serializers.ValidationError(
                 "Пользователь с таким username уже есть."
@@ -93,6 +97,9 @@ class WriteTitleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Title
         fields = '__all__'
+
+    def to_representation(self, instance):
+        return ReadTitleSerializer(instance=instance).data
 
     def validate_year(self, value):
         """Проверка корректности года выпуска."""
